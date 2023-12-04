@@ -1,6 +1,10 @@
 import discord
 import re
 import asyncio
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 async def start(bot_id, id_usu, data_prod, data_values):
     intents = discord.Intents.default()
@@ -29,45 +33,18 @@ async def start(bot_id, id_usu, data_prod, data_values):
         i = 0
         for content in data_prod:
             if content in message_cleaned and price <= data_values[i]:
+                content = content.upper()
                 user = await client.fetch_user(id_usu)
-                await user.send(message.content)
-                print(f"DEBUG: KEY: {content} -> TRIGGER: {price}")
+                await user.send(f"A mensagem foi enviada por conter a chave: {content}, pelo valor de: {price}R$\n{message.content}")
             i = i + 1
 
     await client.start(bot_id)
 
-
 if __name__ == '__main__':
-    data_prod = []
-    data_values = []
-    menu = True
-    while (menu):
-        match input("Gostaria de inserir algum produto? (S/N): ").lower():
-            case "s":
-                data_prod.append(input("Escreva o produto que gostaria de ser notificado: ").lower())
-                data_values.append(float(input("Até quanto gostaria de ser notificado?: ")))
-                validate = True
-                pass
-            case "n":
-                print("Okay, passando...")
-                validate = True
-                pass
-            case _:
-                print("Valor invalido")
-                validate = False
+    # Lê os valores das variáveis de ambiente ou usa valores padrão
+    bot_id = os.getenv('BOT_ID', '')
+    id_usu = os.getenv('ID_USU', '')
+    data_prod = os.getenv('DATA_PROD', '').split(',')
+    data_values = list(map(float, os.getenv('DATA_VALUES', '').split(','))) 
 
-        if (validate != False):
-
-
-            bot_id = '' # id do bot
-            id_usu = '' # id da conta pra ser notificada
-
-
-            print(""" _____                         ___       __      
-| ___ \      (_)              / _ \     | |       (_)                             |   By giomartinsdev
-| |_/ / _ __  _   ___   ___  / /_\ \  __| |__   __ _  ___   ___  _ __             | github.com/giomartinsdev
-|  __/ | '__|| | / __| / _ \ |  _  | / _` |\ \ / /| |/ __| / _ \| '__|            |
-| |    | |   | || (__ |  __/ | | | || (_| | \ V / | |\__ \|  __/| |               |
-\_|    |_|   |_| \___| \___| \_| |_/ \__,_|  \_/  |_||___/ \___||_|   
-""")
-            asyncio.run(start(bot_id, id_usu, data_prod, data_values))
+    asyncio.run(start(bot_id, id_usu, data_prod, data_values))
